@@ -1,5 +1,5 @@
-export const QUIZ_PRODUCT_COUNT = 10;
-export const TARGET_COUNT = 5;
+export const MAX_ROUND_PRODUCTS = 10;
+export const MIN_ROUND_PRODUCTS = 4;
 
 export function hashString(value) {
   return [...value].reduce((hash, char) => Math.imul(hash ^ char.charCodeAt(0), 16777619) >>> 0, 2166136261);
@@ -25,12 +25,27 @@ export function shuffle(values, random) {
   return copy;
 }
 
-export function buildRound(products, seed) {
-  if (products.length < QUIZ_PRODUCT_COUNT) throw new Error('At least ten products are required to build a round.');
-  const random = makeRandom(seed);
-  const chosen = shuffle(products, random).slice(0, QUIZ_PRODUCT_COUNT);
-  const targets = chosen.slice(0, TARGET_COUNT);
-  const targetIds = new Set(targets.map((product) => product.id));
-  return { targets, targetIds, quiz: shuffle(chosen, random), answers: [] };
+export function candidateQueue(products, seed) {
+  return shuffle(products, makeRandom(`${seed}:candidates`));
 }
 
+export function brandKeysFor(product) {
+  const brands = Array.isArray(product.brands) ? product.brands : [];
+  const keys = [...new Set(brands
+    .filter((brand) => typeof brand === 'string')
+    .map((brand) => brand.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean))];
+  return keys.length > 0 ? keys : [`unbranded:${product.id}`];
+}
+
+export function sharesBrandWith(product, claimedBrands) {
+  return brandKeysFor(product).some((brand) => claimedBrands.has(brand));
+}
+
+export function buildRound(loadedProducts, seed) {
+  if (loadedProducts.length < MIN_ROUND_PRODUCTS) throw new Error('At least four loaded products are required to build a round.');
+  const chosen = loadedProducts.slice(0, MAX_ROUND_PRODUCTS);
+  const targets = chosen.slice(0, Math.ceil(chosen.length / 2));
+  const targetIds = new Set(targets.map((product) => product.id));
+  return { targets, targetIds, quiz: shuffle(chosen, makeRandom(`${seed}:quiz`)), answers: [] };
+}

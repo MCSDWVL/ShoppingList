@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildRound } from '../site/game-logic.js';
+import { brandKeysFor, buildRound, candidateQueue, sharesBrandWith } from '../site/game-logic.js';
 
 const products = Array.from({ length: 20 }, (_, index) => ({ id: `id-${index}`, name: `Product ${index}`, imageUrl: `https://example.test/${index}.jpg` }));
 
@@ -20,7 +20,31 @@ test('a round contains five distinct targets and ten distinct quiz products', ()
   assert.ok(round.targets.every((product) => round.targetIds.has(product.id)));
 });
 
-test('a too-small product set is rejected', () => {
-  assert.throws(() => buildRound(products.slice(0, 9), 'seed'), /At least ten products/);
+test('the candidate queue is deterministic and includes every product once', () => {
+  const queue = candidateQueue(products, 'daily-seed');
+  assert.deepEqual(queue, candidateQueue(products, 'daily-seed'));
+  assert.equal(new Set(queue.map((product) => product.id)).size, products.length);
 });
 
+test('brand keys normalize punctuation, diacritics, and multi-brand products', () => {
+  const product = { id: 'a', brands: ['Coca-Cola', 'Mondelez International', 'Café'] };
+  assert.deepEqual(brandKeysFor(product), ['cocacola', 'mondelezinternational', 'cafe']);
+  assert.ok(sharesBrandWith({ id: 'b', brands: ['Mondelez-International'] }, new Set(['mondelezinternational'])));
+});
+
+test('products without brand metadata are unique by barcode', () => {
+  const claimed = new Set(brandKeysFor({ id: 'a' }));
+  assert.ok(!sharesBrandWith({ id: 'b' }, claimed));
+  assert.ok(sharesBrandWith({ id: 'a' }, claimed));
+});
+
+test('a partial round uses a balanced target and decoy split', () => {
+  const round = buildRound(products.slice(0, 5), 'partial-seed');
+  assert.equal(round.quiz.length, 5);
+  assert.equal(round.targets.length, 3);
+  assert.equal(round.quiz.filter((product) => round.targetIds.has(product.id)).length, 3);
+});
+
+test('fewer than four loaded products are rejected', () => {
+  assert.throws(() => buildRound(products.slice(0, 3), 'seed'), /At least four loaded products/);
+});
