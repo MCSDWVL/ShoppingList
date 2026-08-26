@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f27b44">
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="site-header">
+        <p class="eyebrow">Daily memory game</p>
+        <h1>Shopping List</h1>
+      </header>
+
+      <p id="announcement" class="sr-only" aria-live="polite"></p>
+
+      <section id="loading-screen" class="panel screen" aria-labelledby="loading-title">
+        <p class="eyebrow">Getting the trolley ready</p>
+        <h2 id="loading-title">Loading today’s products…</h2>
+        <p id="loading-message">One moment.</p>
+      </section>
+
+      <section id="start-screen" class="panel screen" hidden aria-labelledby="start-title">
+        <p id="daily-label" class="eyebrow"></p>
+        <h2 id="start-title">Can you remember the list?</h2>
+        <p>You’ll have 30 seconds to memorize five products, then 60 seconds to spot them among ten.</p>
+        <button id="start-button" class="button button-primary" type="button">Start game</button>
+      </section>
+
+      <section id="memorize-screen" class="screen" hidden aria-labelledby="memorize-title">
+        <div class="phase-heading">
+          <div>
+            <p class="eyebrow">Memorize these five</p>
+            <h2 id="memorize-title">Your shopping list</h2>
+          </div>
+          <p id="memorize-timer" class="timer" aria-label="Memorization time remaining">0:30</p>
+        </div>
+        <div id="shopping-list" class="product-grid" aria-label="Products to remember"></div>
+        <div class="skip-control">
+          <button id="play-now-button" class="button button-secondary" type="button">Play now</button>
+        </div>
+      </section>
+
+      <section id="quiz-screen" class="screen" hidden aria-labelledby="quiz-title">
+        <div class="phase-heading">
+          <div>
+            <p id="quiz-progress" class="eyebrow">Product 1 of 10</p>
+            <h2 id="quiz-title">Was this on your list?</h2>
+          </div>
+          <p id="quiz-timer" class="timer" aria-label="Answer time remaining">1:00</p>
+        </div>
+        <article id="quiz-card" class="quiz-card"></article>
+        <div class="answer-buttons" aria-label="Choose your answer">
+          <button id="yes-button" class="button button-primary" type="button">Yes, it was</button>
+          <button id="no-button" class="button button-secondary" type="button">No, it wasn’t</button>
+        </div>
+      </section>
+
+      <section id="results-screen" class="screen" hidden aria-labelledby="results-title">
+        <div class="panel results-summary">
+          <p class="eyebrow">Round complete</p>
+          <h2 id="results-title">You got <span id="score">0</span> / 10</h2>
+          <p id="time-used"></p>
+          <div class="answer-buttons">
+            <button id="replay-button" class="button button-primary" type="button">Replay this round</button>
+            <button id="daily-button" class="button button-secondary" type="button">Play today’s round</button>
+          </div>
+        </div>
+        <h3>Answer review</h3>
+        <div id="review-list" class="review-list"></div>
+      </section>
+
+      <section id="error-screen" class="panel screen" hidden aria-labelledby="error-title">
+        <p class="eyebrow">Products unavailable</p>
+        <h2 id="error-title">Today’s list isn’t ready yet.</h2>
+        <p id="error-message">Please try again after the daily snapshot has been published.</p>
+        <button id="retry-button" class="button button-primary" type="button">Try again</button>
+      </section>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
