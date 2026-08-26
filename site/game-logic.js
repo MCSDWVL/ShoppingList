@@ -42,6 +42,14 @@ export function sharesBrandWith(product, claimedBrands) {
   return brandKeysFor(product).some((brand) => claimedBrands.has(brand));
 }
 
+export function formatShareText({ seed, answers, elapsedSeconds, url }) {
+  const score = answers.filter((answer) => answer.correct).length;
+  const duration = `${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, '0')}`;
+  const cells = answers.map((answer) => answer.wasListed === null ? '⬜' : answer.correct ? '🟩' : '🟥');
+  const grid = Array.from({ length: Math.ceil(cells.length / 5) }, (_, index) => cells.slice(index * 5, index * 5 + 5).join('')).join('\n');
+  return `Shopping List ${seed}\n${score}/${answers.length} · ${duration}\n\n${grid}\n\n${url}`;
+}
+
 export function buildRound(loadedProducts, seed) {
   if (loadedProducts.length < MIN_ROUND_PRODUCTS) throw new Error('At least four loaded products are required to build a round.');
   const chosen = loadedProducts.slice(0, MAX_ROUND_PRODUCTS);

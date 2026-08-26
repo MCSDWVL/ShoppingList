@@ -1,4 +1,4 @@
-import { MAX_ROUND_PRODUCTS, MIN_ROUND_PRODUCTS, brandKeysFor, buildRound, candidateQueue, sharesBrandWith } from './game-logic.js';
+import { MAX_ROUND_PRODUCTS, MIN_ROUND_PRODUCTS, brandKeysFor, buildRound, candidateQueue, formatShareText, sharesBrandWith } from './game-logic.js';
 
 const MEMORIZE_SECONDS = 30;
 const QUIZ_SECONDS = 60;
@@ -14,7 +14,7 @@ const elements = {
   start: document.querySelector('#start-screen'), dailyLabel: document.querySelector('#daily-label'), startButton: document.querySelector('#start-button'),
   memorize: document.querySelector('#memorize-screen'), memorizeTimer: document.querySelector('#memorize-timer'), shoppingList: document.querySelector('#shopping-list'), playNow: document.querySelector('#play-now-button'),
   quiz: document.querySelector('#quiz-screen'), quizTimer: document.querySelector('#quiz-timer'), quizProgress: document.querySelector('#quiz-progress'), quizCard: document.querySelector('#quiz-card'), yes: document.querySelector('#yes-button'), no: document.querySelector('#no-button'),
-  results: document.querySelector('#results-screen'), score: document.querySelector('#score'), scoreTotal: document.querySelector('#score-total'), timeUsed: document.querySelector('#time-used'), reviewList: document.querySelector('#review-list'), replay: document.querySelector('#replay-button'), daily: document.querySelector('#daily-button'),
+  results: document.querySelector('#results-screen'), score: document.querySelector('#score'), scoreTotal: document.querySelector('#score-total'), timeUsed: document.querySelector('#time-used'), reviewList: document.querySelector('#review-list'), share: document.querySelector('#share-button'), replay: document.querySelector('#replay-button'), daily: document.querySelector('#daily-button'),
   error: document.querySelector('#error-screen'), errorMessage: document.querySelector('#error-message'), retry: document.querySelector('#retry-button'),
 };
 
@@ -146,6 +146,7 @@ function finishRound() {
   const elapsed = Math.min(QUIZ_SECONDS, Math.round((Date.now() - answerStartedAt) / 1000));
   while (round.answers.length < round.quiz.length) { const product = round.quiz[round.answers.length]; round.answers.push({ product, wasListed: null, correct: false }); }
   const score = round.answers.filter((item) => item.correct).length;
+  round.elapsedSeconds = elapsed;
   elements.score.textContent = score;
   elements.scoreTotal.textContent = round.quiz.length;
   elements.timeUsed.textContent = `Answered in ${formatTime(elapsed)}.`;
@@ -179,6 +180,10 @@ async function loadGame() {
 elements.startButton.addEventListener('click', prepareRound);
 elements.playNow.addEventListener('click', beginQuiz);
 elements.yes.addEventListener('click', () => answer(true)); elements.no.addEventListener('click', () => answer(false));
+elements.share.addEventListener('click', () => {
+  const text = formatShareText({ seed: activeSeed, answers: round.answers, elapsedSeconds: round.elapsedSeconds, url: window.location.href });
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+});
 elements.replay.addEventListener('click', prepareRound);
 elements.daily.addEventListener('click', () => { const url = new URL(window.location.href); url.searchParams.delete('seed'); window.location.assign(url); });
 elements.retry.addEventListener('click', () => products.length >= MIN_ROUND_PRODUCTS ? prepareRound() : loadGame());

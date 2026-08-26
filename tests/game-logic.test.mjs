@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { brandKeysFor, buildRound, candidateQueue, sharesBrandWith } from '../site/game-logic.js';
+import { brandKeysFor, buildRound, candidateQueue, formatShareText, sharesBrandWith } from '../site/game-logic.js';
 
 const products = Array.from({ length: 20 }, (_, index) => ({ id: `id-${index}`, name: `Product ${index}`, imageUrl: `https://example.test/${index}.jpg` }));
 
@@ -36,6 +36,19 @@ test('products without brand metadata are unique by barcode', () => {
   const claimed = new Set(brandKeysFor({ id: 'a' }));
   assert.ok(!sharesBrandWith({ id: 'b' }, claimed));
   assert.ok(sharesBrandWith({ id: 'a' }, claimed));
+});
+
+test('share text is spoiler-free and preserves answer outcomes in a five-wide grid', () => {
+  const text = formatShareText({
+    seed: '2026-08-26',
+    elapsedSeconds: 42,
+    url: 'https://example.test/',
+    answers: [
+      { wasListed: true, correct: true }, { wasListed: false, correct: false }, { wasListed: null, correct: false },
+      { wasListed: true, correct: true }, { wasListed: false, correct: true }, { wasListed: true, correct: false },
+    ],
+  });
+  assert.equal(text, 'Shopping List 2026-08-26\n3/6 · 0:42\n\n🟩🟥⬜🟩🟩\n🟥\n\nhttps://example.test/');
 });
 
 test('a partial round uses a balanced target and decoy split', () => {
